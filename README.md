@@ -41,9 +41,6 @@ struct Test {
 // fn hello_world() -> Result<Test, APIError> (this is why the error type needs to be in-scope)
 get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json":
     fn hello_world() -> Test)
-    
-get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json": 
-    fn hello_world() -> Test)
   
 // Vectors are automatically decoded!
 get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_vec.json": 
