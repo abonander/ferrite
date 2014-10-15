@@ -67,7 +67,7 @@ mod test{
         hello: String,    
     }
     
-    get!("http://echo.jsontest.com/hello/world/": fn hello_world() -> Test)
+    get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json": fn hello_world() -> Test)
     
     #[test]
     fn test_hello_world() {
