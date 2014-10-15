@@ -21,9 +21,12 @@ Usage
 
 
 
+
 ```rust
-extern crate ferrite;
-use self::ferrite::APIError; // Ferrite's error type needs to be in-scope
+extern crate ferrite; // Not sure if needs #[phase(plugin)]
+
+// Ferrite's error type needs to be in-scope, plus variants until we get enum subnamespacing
+use self::ferrite::{APIError, RestErr, StatusErr, JsonErr};; 
     
 #[deriving(Decodable)]
 struct Test {
@@ -35,8 +38,31 @@ struct Test {
 get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json":
     fn hello_world() -> Test)
     
+get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json": 
+    fn hello_world() -> Test)
+  
+// Vectors are automatically decoded!
+get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_vec.json": 
+    fn hello_vec() -> Vec<Test>)
+   
+// Preface a parameter with ? to format it in the URL instead of passing it in the query string
+// ?-parameters MUST come before regular ones
+get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_{}.json": 
+    fn hello(?val: &str) -> Test)
+
 fn main() {
     let test = hello_world().unwrap();
     assert!(test.hello.as_slice() == "world");
+    
+    let test = hello("world").unwrap();
+    assert!(test.hello.as_slice() == "world"); 
+    
+    let test_vec = hello_vec().unwrap();
+    let mut test_iter = test_vec.iter();
+    assert!(test_iter.next().unwrap().hello.as_slice() == "world");
+    assert!(test_iter.next().unwrap().hello.as_slice() == "nation");
+    assert!(test_iter.next().unwrap().hello.as_slice() == "city");
+    assert!(test_iter.next().unwrap().hello.as_slice() == "person");
+    assert!(test_iter.next().is_none());
 }
 ```
