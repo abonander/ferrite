@@ -1,23 +1,46 @@
 #![feature(macro_rules)]
+#![allow(unused_imports)]
 extern crate serialize;
 extern crate rest_client;
 
-pub use self::serialize::json::DecoderError as JsonError;
+/// Reexported types
+pub use self::ferrite::{
+    JsonError,
+    RestClient,
+    RestError,
+    decode,
+    APIError,
+    RestErr,
+    StatusErr,
+    JsonErr
+};    
 
-use self::rest_client::RestError;
-
-#[deriving(Show)]
-pub enum APIError {
-    RestErr(RestError),
-    StatusErr(String),
-    JsonErr(JsonError), 
+mod ferrite {
+    pub use serialize::json::DecoderError as JsonError;
+    pub use rest_client::{RestClient, RestError};
+    pub use serialize::json::decode;
+   
+    #[deriving(Show)]
+    pub enum APIError {
+        RestErr(RestError),
+        StatusErr(String),
+        JsonErr(JsonError), 
+    }
 }
 
 macro_rules! rest(
     ($verb_ext: ident $url:expr: fn $fn_name:ident ($(?$param:ident: $ty: ty),+ $($arg:ident: $ty:ty),+) -> $ret:ty) => (
         fn $fn_name($($arg: $ty),+) -> Result<$ret, APIError> {
-            use rest_client::RestClient;
-            use serialize::json::decode;
+            use ferrite::{
+                JsonError,
+                RestClient,
+                RestError,
+                decode,
+                APIError,
+                RestErr,
+                StatusErr,
+                JsonErr
+            };
 
             pair!()
 
@@ -36,10 +59,18 @@ macro_rules! rest(
         }
     );
     ($verb:ident $url:expr: fn $fn_name:ident ($(?$param:ident: $ty:ty),+) -> $ret:ty) => (
-        fn $fn_name($($param: $ty),+) -> Result<$ret, APIError> {
-            use rest_client::RestClient;
-            use serialize::json::decode;
-            
+        fn $fn_name($($param: $ty),+) -> Result<$ret, APIError> { 
+            use ferrite::{
+                JsonError,
+                RestClient,
+                RestError,
+                decode,
+                APIError,
+                RestErr,
+                StatusErr,
+                JsonErr
+            };
+
             let url = format!($url, $($param),+);
             
             let response = try!(RestClient::$verb(url.as_slice()).map_err(|e| RestErr(e)));
@@ -52,10 +83,18 @@ macro_rules! rest(
         }
     );
     ($verb:ident $url:expr: fn $fn_name:ident () -> $ret:ty) => (
-        fn $fn_name() -> Result<$ret, APIError> {
-            use rest_client::RestClient;
-            use serialize::json::decode;
-            
+        fn $fn_name() -> Result<$ret, APIError> {           
+            use ferrite::{
+                JsonError,
+                RestClient,
+                RestError,
+                decode,
+                APIError,
+                RestErr,
+                StatusErr,
+                JsonErr
+            };
+
             const URL: &'static str = $url;
             
             let response = try!(RestClient::$verb(URL).map_err(|e| RestErr(e)));
@@ -69,9 +108,17 @@ macro_rules! rest(
     );
     ($verb_ext:ident $url:expr: fn $fn_name:ident ($($arg:ident: $ty:ty),+) -> $ret:ty) => (
         fn $fn_name($($arg: $ty),+) -> Result<$ret, APIError> {
-            use rest_client::RestClient;
-            use serialize::json::decode;
-
+            use ferrite::{
+                JsonError,
+                RestClient,
+                RestError,
+                decode,
+                APIError,
+                RestErr,
+                StatusErr,
+                JsonErr
+            };
+            
             pair!()
 
             const URL: &'static str = $url;
@@ -119,7 +166,7 @@ macro_rules! get(
 
 #[cfg(test)]
 mod test{
-    use super::{APIError, RestErr, StatusErr, JsonErr};
+    use super::APIError; 
 
     #[deriving(Decodable)]
     struct Test {
