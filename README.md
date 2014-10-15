@@ -1,7 +1,7 @@
 ferrite
 =======
 
-A typesafe API wrapper for Rust, in the same vein as Retrofit for Java (https://square.github.io/retrofit/).
+A typesafe API wrapper generator for Rust, in the same vein as Retrofit for Java (https://square.github.io/retrofit/).
 
 Compared to Retrofit, ferrite generates the glue-code at compile-time; no runtime reflection necessary. Generated functions return informative errors on failure, and can be called just like any other Rust function.
 
