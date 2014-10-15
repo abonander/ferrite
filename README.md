@@ -6,7 +6,7 @@ A typesafe API wrapper generator for Rust, in the same vein as Retrofit for Java
 Compared to Retrofit, ferrite generates the glue-code at compile-time; no runtime reflection necessary. Generated functions return informative errors on failure, and can be called just like any other Rust function.
 
 Currently only a proof-of-concept, ferrite needs quite a bit more work to reach feature-parity with Retrofit,
-and even the underlying `rest_client` library that powers it.
+and even the underlying [`rest_client`](https://github.com/gtolle/rest_client) library that powers it.
 
 * POST Requests
 * Miscellaneous REST verbs (PUT, DELETE, HEAD, etc.)
