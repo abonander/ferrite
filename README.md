@@ -19,14 +19,16 @@ and even the underlying `rest_client` library that powers it.
 Usage
 -----
 
-
+Add to your `Cargo.toml`:
+```
+[dependencies.ferrite]
+git = "https://github.com/cybergeek94/ferrite"
 
 
 ```rust
 extern crate ferrite; // Not sure if needs #[phase(plugin)]
-
-// Ferrite's error type needs to be in-scope, plus variants until we get enum subnamespacing
-use self::ferrite::{APIError, RestErr, StatusErr, JsonErr};; 
+// Ferrite's error type needs to be in-scope for the function signatures
+use self::ferrite::APIError; 
     
 #[deriving(Decodable)]
 struct Test {
