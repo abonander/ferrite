@@ -23,7 +23,7 @@ Add to your `Cargo.toml`:
 ```
 [dependencies.ferrite]
 git = "https://github.com/cybergeek94/ferrite"
-
+```
 
 ```rust
 extern crate ferrite; // Not sure if needs #[phase(plugin)]
