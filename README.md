@@ -14,6 +14,8 @@ and even the underlying `rest_client` library that powers it.
 * Multipart/file/binary uploads (using `Reader`)
 * Generation of methods (e.g. functions in an `impl` that take `&self`) that can pass struct fields as parameters
 * Support for generics (necessary?)
+* Configurable parameter keys (necessary?)
+* Static/dynamic manipulation of headers (necessary?)
 * Usability/readability tweaks to syntax
 
 Usage
