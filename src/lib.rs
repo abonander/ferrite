@@ -86,6 +86,20 @@ macro_rules! get(
     )
 )
 
+#[macro_export]
+macro_rules! post(
+    ($url:expr: fn $fn_name:ident {$($param:ident: $p_ty: ty),*}($($arg:ident: $a_ty:ty),*) -> $ret:ty) => (
+        rest!(post_with_params $url: 
+            fn $fn_name{$($param: $p_ty),*}($($arg: $a_ty),*) -> $ret
+        )
+    );
+    ($url:expr: fn $fn_name:ident ($($arg:ident: $a_ty:ty),*) -> $ret:ty) => (
+        rest!(post_with_params $url:
+            fn $fn_name{}($($arg: $a_ty),*) -> $ret
+        )
+    )
+)
+
 
 #[cfg(test)]
 mod test{
@@ -128,5 +142,14 @@ mod test{
         assert!(test_iter.next().unwrap().hello.as_slice() == "person");
         assert!(test_iter.next().is_none());              
     }
-    
+
+    post!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json":
+        fn post_hello_world() -> Test)
+
+    #[test]
+    fn test_post_please_ignore() {
+        let test = post_hello_world().unwrap();
+        
+        assert!(test.hello.as_slice() == "world");    
+    } 
 }
