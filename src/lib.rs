@@ -1,9 +1,11 @@
-#![feature(macro_rules)]
-#![allow(unused_imports)]
+#![feature(macro_rules, phase, slicing_syntax)]
+#[phase(plugin, link)] extern crate log;
 extern crate serialize;
 extern crate rest_client;
+extern crate hyper;
 
 /// Reexported types
+#[allow(unused_imports)]
 pub use self::ferrite::{
     JsonError,
     RestClient,
@@ -13,7 +15,7 @@ pub use self::ferrite::{
     RestErr,
     StatusErr,
     JsonErr
-};    
+};
 
 mod ferrite {
     pub use serialize::json::DecoderError as JsonError;
@@ -32,11 +34,8 @@ macro_rules! rest(
     ($method:ident $url:expr: fn $fn_name:ident {$($param:ident: $p_ty: ty),*}($($arg:ident: $a_ty:ty),*) -> $ret:ty) => (
         fn $fn_name($($param: $p_ty),* $($arg: $a_ty),*) -> Result<$ret, APIError> {
             use ferrite::{
-                JsonError,
                 RestClient,
-                RestError,
                 decode,
-                APIError,
                 RestErr,
                 StatusErr,
                 JsonErr
@@ -54,6 +53,7 @@ macro_rules! rest(
             if response.body.is_empty() {
                 Err(StatusErr(response.status.to_string()))    
             } else {
+                debug!("response: {}", response.body);
                 decode::<$ret>(response.body.as_slice()).map_err(|e| JsonErr(e))    
             }
         }
@@ -100,39 +100,58 @@ macro_rules! post(
     )
 )
 
+#[macro_escape]
+#[cfg(test)]
+mod test_server;
 
 #[cfg(test)]
 mod test{
-    use super::APIError; 
+    use super::APIError;
+    use test_server;
 
     #[deriving(Decodable)]
     struct Test {
         hello: String,    
     }
-   
-    // TODO: Host these on GitHub-Pages or a local test server 
-    get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json": fn hello_world() -> Test)
-  
-    get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_vec.json": fn hello_vec() -> Vec<Test>)
-   
-    get!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_{}.json": fn hello{val: &str}() -> Test)
-    
+ 
+    get!("http://127.0.0.1:15370": fn hello_world() -> Test)
+
     #[test]
     fn test_hello_world() {
+        let mut server = echo_const!(15370,
+            r#"{"hello":"world"}"# // Raw string syntax kicks ass 
+        );
+
         let test = hello_world().unwrap();
 
         assert!(test.hello.as_slice() == "world");
+        server.close().unwrap();
     }        
-    
+    get!("http://127.0.0.1:15371/hello/{}": fn hello{val: &str}() -> Test)
+
     #[test]
     fn test_hello() {
-        let test = hello("world").unwrap();
-        
-        assert!(test.hello.as_slice() == "world");    
+        let mut server = test_server::echo_path(15371); 
+
+        let test = hello("world").unwrap();        
+        assert!(test.hello.as_slice() == "world");
+
+        server.close().unwrap();  
     }
+    
+    get!("http://127.0.0.1:15372/": fn hello_vec() -> Vec<Test>)
 
     #[test]
     fn test_hello_vec() {
+        let mut server = echo_const!(15372,
+            r#"[
+                {"hello":"world"},
+                {"hello":"nation"},
+                {"hello":"city"},
+                {"hello":"person"}
+            ]"#
+        );
+
         let test_vec = hello_vec().unwrap();
         let mut test_iter = test_vec.iter();
 
@@ -140,16 +159,20 @@ mod test{
         assert!(test_iter.next().unwrap().hello.as_slice() == "nation");
         assert!(test_iter.next().unwrap().hello.as_slice() == "city");
         assert!(test_iter.next().unwrap().hello.as_slice() == "person");
-        assert!(test_iter.next().is_none());              
+        assert!(test_iter.next().is_none());
+        
+        server.close().unwrap();     
     }
 
-    post!("https://raw.githubusercontent.com/cybergeek94/ferrite/master/json/hello_world.json":
-        fn post_hello_world() -> Test)
+    post!("http://127.0.0.1:15373/": fn post_hello(hello: &str) -> Test)
 
     #[test]
     fn test_post_please_ignore() {
-        let test = post_hello_world().unwrap();
-        
-        assert!(test.hello.as_slice() == "world");    
+        let mut server = test_server::echo_params(15373);
+
+        let test = post_hello("world").unwrap();        
+        assert!(test.hello.as_slice() == "world");
+
+        server.close().unwrap();
     } 
 }
